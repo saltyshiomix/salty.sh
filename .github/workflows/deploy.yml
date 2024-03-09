@@ -1,0 +1,46 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_ROLE_ARN: arn:aws:iam::054395278957:role/deploy-salty.sh
+  AWS_REGION: ap-northeast-1
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './.node-version'
+          cache: yarn
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Production build
+        run: yarn build
+
+      - name: Deploy
+        working-directory: dist
+        run: |
+          aws s3 sync . s3://salty.sh --delete
+          aws cloudfront create-invalidation --distribution-id "${{ secrets.AWS_CF_DISTRIBUTION }}" --paths "/*"
