@@ -18,14 +18,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - run: pnpm i
+
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Install Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version-file: .node-version
-          cache: yarn
+          cache: pnpm
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
@@ -34,13 +41,13 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install dependencies
-        run: yarn install
+        run: pnpm i
 
       - name: Production build
-        run: yarn build
+        run: pnpm build
 
       - name: Deploy
-        working-directory: dist
+        working-directory: out
         run: |
           aws s3 sync . s3://salty.sh --delete
           aws cloudfront create-invalidation --distribution-id "${{ secrets.AWS_CF_DISTRIBUTION }}" --paths "/*"

@@ -1,11 +1,14 @@
 pre-commit:
-  commands:
-    check:
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npx biome check --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
-
-pre-push:
-  commands:
-    check:
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npx biome check --no-errors-on-unmatched --files-ignore-unknown=true {push_files}
+  jobs:
+    - name: Lint
+      run: npx eslint {staged_files} --fix
+      glob:
+        - '*.ts'
+        - '*.tsx'
+      stage_fixed: true
+    - name: Format
+      run: npx prettier --write {staged_files}
+      glob:
+        - '*.ts'
+        - '*.tsx'
+      stage_fixed: true
