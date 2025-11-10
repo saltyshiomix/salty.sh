@@ -18,8 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: pnpm i
-
       - name: Checkout
         uses: actions/checkout@v5
 
@@ -28,7 +26,7 @@ jobs:
         with:
           version: 10
 
-      - name: Install Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: .node-version
